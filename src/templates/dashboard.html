@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+
+{% block content %}
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Dashboard</h5>
+                <div class="text-right">
+                    <a href="{{ url_for('logs') }}" class="btn btn-xs btn-default">Logs ({{ logs|count }})</a>
+                    <a href="{{ url_for('transactions') }}" class="btn btn-xs btn-default">Transactions ({{ transactions|count }})</a>
+                    <a href="{{ url_for('security') }}" class="btn btn-xs btn-success">Security</a>
+                </div>
+            </div>
+            <div class="ibox-content">
+                <p>
+                    Connected: <span class="label {% if setting.connected %}label-primary{% else %}label-danger{% endif %}">{{ setting.connected or "False" }}</span>
+                    <br><small>Connected to ExA server</small>
+                </p>
+                {% if setting.allowed_pairs or setting.allowed_action or setting.allowed_balance %}
+                <p class="hr-line-dashed"></p>
+                {% endif %}
+                <p>
+                    {% if setting.allowed_pairs %}
+                        Allowed Pairs: {{ ", ".join(setting.allowed_pairs) }}
+                    {% endif %}
+                    {% if setting.allowed_actions %}
+                        <br><br>
+                        Allowed Actions: {{ ", ".join(setting.allowed_actions)|upper }}
+                    {% endif %}
+                    {% if setting.allowed_balance %}
+                        <br><br>
+                        Allowed Balance: <b>{{ setting.allowed_balance }}</b> USDT
+                        {% if balances %}
+                            <ul>
+                            {% for key, value in balances.items() %}
+                                <li> {{ key }}: <b class="text-{{ value.label }}">{{ value.balance }}</b> USDT </li>
+                            {% endfor %}
+                            </ul>
+                        {% endif %}
+                    {% endif %}
+                </p>
+                <p class="hr-line-dashed"></p>
+                <p>
+                    Version: <span class="label">{{ version }}</span>
+                    <br><small>ExA client version</small>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Exchanges</h5>
+            </div>
+            <div class="ibox-content">
+                {% if exchanges %}
+                    <div class="table-responsive">
+                        <table class="table">
+                            <thead>
+                            <tr>
+                                <th>Name</th>
+                                <th>Status</th>
+                                <th>Enabled</th>
+                                <th>Last refreshed</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {% for exchange in exchanges %}
+                                <tr>
+                                    <td>{{ exchange.name|title }}</td>
+                                    <td>
+
+                                        {% if not exchange.api_key  %}
+                                            <span class="label label-default">Unknown</span>
+                                        {% elif exchange.valid %}
+                                            <span class="label label-primary">Connected</span>
+                                        {% else %}
+                                            <span class="label label-danger">Invalid API Keys</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        {% if not exchange.api_key  %}
+                                            <span class="label label-default">Disabled</span>
+                                        {% elif exchange.enabled %}
+                                            <span class="label label-primary">Enabled</span>
+                                        {% else %}
+                                            <span class="label label-default">Disabled</span>
+                                        {% endif %}
+
+                                    </td>
+                                    <td>
+                                        {{ exchange.refreshed }}
+                                    <td>
+                                    <td class="text-right">
+                                        <a href="{{ url_for('exchange_edit', exchange_id=exchange.id ) }}" class="btn btn-xs btn-success">
+                                            {% if not exchange.api_secret %} Add API Keys {% else %} Edit {% endif %}
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}

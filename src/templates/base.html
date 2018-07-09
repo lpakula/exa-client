@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="">
+    <title>ExA | Client</title>
+
+    <link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet">
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    {% block stylesheets %}
+    {% endblock %}
+
+
+</head>
+
+<body class="md-skin">
+{% block body %}
+
+    <div class="middle-box">
+        <h1 class="logo-name text-center">ExA</h1>
+
+        <div class="row">
+            <div class="col-sm-12">
+                {% with messages = get_flashed_messages(with_categories=true) %}
+                    {% for category, message in messages %}
+                        <div class="alert alert-{{ category }} alert-dismissible fade in" role="alert">
+                            {{ message|safe }}
+                        </div>
+                    {% endfor %}
+                {% endwith %}
+            </div>
+        </div>
+
+        <div class="row">
+            {% block content %}
+            {% endblock content %}
+        </div>
+    </div>
+
+<script src="{{ url_for('static', filename='js/jquery-3.1.1.min.js') }}"></script>
+{% block javascript %}
+{% endblock javascript %}
+
+{% endblock body %}
+</body>
+
+</html>

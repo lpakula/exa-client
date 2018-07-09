@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block stylesheets %}
+    <link href="{{ url_for('static', filename='css/select2.min.css') }}" rel="stylesheet">
+{% endblock %}
+
+{% block content %}
+
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Security <small>settings</small></h5>
+            </div>
+            <div class="ibox-content">
+                <form action="{{ request.path }}" method="post" class="form-horizontal">
+                    {{ form.csrf_token }}
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">{{ form.allowed_pairs.label }}</label>
+                        <div class="col-sm-6">
+                            {{ form.allowed_pairs(class='select2') }}
+                            {% for error in form.allowed_pairs.errors %}
+                                <span class="help-block m-b-none text-danger">{{ error }}</span>
+                            {% endfor %}
+                            <span class="help-block m-b-none">
+                                Only trading pairs from that list are allowed to processed.
+                                <br>Allow only pairs you currenlty trading.
+                                <br>Leave it empty to allow all trading pairs.
+                                <br>
+                                <span class="text-info">Add BTC/USDT pair if you <i>Deposit from/to USDT</i>.</span>
+                                <br><span class="text-success">Can't find pair you looking for? try refresh</span>
+
+                            </span>
+                        </div>
+                    <div class="col-sm-1"><a href="{{ url_for('sync_symbols') }}" class="btn btn-xs btn-success " style="margin-top: 5px;">REFRESH</a></div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">{{ form.allowed_actions.label }}</label>
+                        <div class="col-sm-6">
+                            {{ form.allowed_actions(class='select2') }}
+                            {% for error in form.allowed_actions.errors %}
+                                <span class="help-block m-b-none text-danger">{{ error }}</span>
+                            {% endfor %}
+                            <span class="help-block m-b-none">
+                                Only actions from that list are allowed to execute.
+                                <br>Leave it empty to allow all available actions.
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">{{ form.allowed_balance.label }}</label>
+                        <div class="col-sm-6">
+                            {{ form.allowed_balance(class="form-control") }}
+                            {% for error in form.allowed_balance.errors %}
+                                <span class="help-block m-b-none text-danger">{{ error }}</span>
+                            {% endfor %}
+                            <span class="help-block m-b-none">
+                                Balance ExA client is allowed to use expressed in USD.
+                                <br>Limit is applied for all trading pairs separately.
+                                <br>Limit is applied to Buy transactions only.
+                                <br>Amount used for BTC trading pairs is calculaced based on current price.
+                                <br>Leave it empty if you don't want to set the balance limit.
+                                <br><span class="text-warning">If you deposit from USDT for many concurrent trades, limit is shared between all of them because is applied to BTC/USDT pair also.</span>
+
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <label class="col-sm-3 control-label">{{ form.test_mode.label }}</label>
+                        <div class="col-sm-6">
+                            {{ form.test_mode() }}
+                            {% for error in form.test_mode.errors %}
+                                <span class="help-block m-b-none text-danger">{{ error }}</span>
+                            {% endfor %}
+                            <span class="help-block m-b-none">
+                                Use it to test ExA client.
+                                <br>In test mode no real transactions are performed on exchange.
+                            </span>
+                        </div>
+                    </div>
+                    <div class="form-group">
+                        <div class="col-sm-4 col-sm-offset-3">
+                            <a href="{{ url_for('dashboard') }}" class="btn btn-white" type="submit">Cancel</a>
+                            <button class="btn btn-primary" type="submit">Save changes</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block javascript %}
+    <script src="{{ url_for('static', filename='js/select2.full.min.js') }}"></script>
+    <script>
+    $(document).ready(function(){
+        $(".select2").select2({ width: '100%' });
+    });
+    </script>
+{% endblock %}

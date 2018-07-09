@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+
+    <div class="col-sm-12">
+        <div class="ibox float-e-margins">
+            <div class="ibox-title">
+                <h5>Logs</h5>
+                <div class="text-right">
+                    <a href="{{ url_for('dashboard') }}" class="btn btn-xs btn-default">Back</a>
+                    <a href="{{ url_for('logs_delete') }}" class="btn btn-xs btn-danger">Delete logs</a>
+                </div>
+            </div>
+            <div class="ibox-content">
+                <p>
+                    In this section you can see all actions performed by ExA client.
+                </p>
+                {% if is_connected %}
+                <p>
+
+                    <br>If anything is not working as expected please send the logs to the ExA server for our team to examine. It will help ExA to fix all the issues faster and improve platfom stability.
+                </p>
+                <p>
+                    <a href="{{ url_for('logs_send') }}" class="btn btn-xs btn-success">Send logs</a>
+                </p>
+                {% endif %}
+
+                <table class="table table-striped">
+                    <thead>
+                    <tr>
+                        <th style="width:30%;">Time</th>
+                        <th>Message</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                        {% for log in logs %}
+                            <tr>
+                                <td>{{ log.created }}</td>
+                                <td>{{ log.message }}</td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock content %}
