@@ -23,7 +23,7 @@ def buildapp(version):
         with lcd('src'):
             local('docker run -v "$(pwd):/src/" cdrx/pyinstaller-{}'.format(client))
         with lcd('src/dist'):
-            local('zip -r ../app/exa1-client_{client}_{version}.zip {client}'.format(
+            local('zip -r ../app/exa-client_{client}_{version}.zip {client}'.format(
                 client=client, version=version))
 
 
@@ -34,6 +34,6 @@ def checksum(version):
     """
 
     for client in ['linux', 'windows', 'macos']:
-        output = local('sha1sum ../app/exa1-client_{client}_{version}.zip'.format(
+        output = local('sha1sum ../app/exa-client_{client}_{version}.zip'.format(
             client=client, version=version), capture=True)
         print(green(output))
