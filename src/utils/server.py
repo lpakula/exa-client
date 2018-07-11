@@ -100,9 +100,8 @@ class ExAServerHelper(object):
         payload = {
             'action_id': action_id,
             'status': True,
-            'response': {
-                'balance': balance
-            }
+            'response': 'Balance: {}'.format(balance),
+            'balance': balance
         }
 
         response = requests.put(
