@@ -226,7 +226,7 @@ def create_app(test_config=None):
     def _log_exception(e, exchange=None):
         if exchange:
             exchange_name = exchange
-            exchange_obj = Exchange.query.get(name=exchange_name)
+            exchange_obj = Exchange.query.filter_by(name=exchange_name)[0]
             exchange_obj.enabled = False
         else:
             exchange_name = None
