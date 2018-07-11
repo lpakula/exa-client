@@ -19,11 +19,11 @@ def buildapp(version):
     Build applications
 
     """
-    for client in ['linux']:
+    for client in ['linux', 'windows']:
         with lcd('src'):
             local('docker run -v "$(pwd):/src/" cdrx/pyinstaller-{}'.format(client))
-        with lcd('src/dist'):
-            local('zip -r ../app/exa-client_{client}_{version}.zip {client}'.format(
+        with lcd('src/dist/{}'.format(client)):
+            local('zip ../../../app/exa-client_{client}_{version}.zip exa exa.exe'.format(
                 client=client, version=version))
 
 
