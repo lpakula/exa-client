@@ -8,7 +8,7 @@ import logging
 from typing import List, Dict, Any, Optional
 from database import db_session
 from exceptions import DependencyException
-from models import Exchange, Transaction
+from models import Transaction
 from logger import SQLAlchemyHandler
 from utils.exchange import ExchangeHelper
 from utils.transaction import TransactionHandler
@@ -43,7 +43,8 @@ class ActionHandler(object):
 
         self.__getattribute__(f'_perform_{self.buy_or_sell}')()
         summary = self._summary()
-        logger.info(f'{self.action_id}:{self.pair} - Summary - {summary}')
+        log_summary = ' '.join([f'{key}:{value}' for key,value in summary.items()])
+        logger.info(f'{self.action_id}:{self.pair} - Summary - {log_summary}')
         return summary
 
     def _perform_buy(self) -> None:
@@ -84,7 +85,6 @@ class ActionHandler(object):
 
     def _transaction(self, pair: str, amount: float) -> float:
         """Execute transaction"""
-
         logger.info(
             f'{self.action_id}:{self.pair} - {self.buy_or_sell} - pair:{pair} amount:{amount}')
         filled_total = 0
@@ -97,19 +97,19 @@ class ActionHandler(object):
                 quantity_requested = amount * last_price
                 quantity_available = self.exchange.get_balance(quote)
             else:
-                asset = self.exchange.client.markets[pair]['asset']
+                base = self.exchange.client.markets[pair]['base']
                 quantity_requested = amount
-                quantity_available = self.exchange.get_balance(asset)
+                quantity_available = self.exchange.get_balance(base)
 
             #: Make sure requested amount is available
             if quantity_requested > quantity_available:
-                amount = self.exchange.symbol_amount_prec(pair, quantity_available / last_price)
-                self.amount = self.exchange.symbol_amount_prec(pair, quantity_available / last_price)
+                amount = quantity_available / last_price if self.buy_or_sell == 'buy' else \
+                    quantity_available
                 logger.info(
                     f'{self.action_id}:{pair} - amount reduced due to available balance: {amount}')
 
-            rate = self.exchange.get_rate_limit(
-                pair=pair, buy_or_sell=self.buy_or_sell, amount=amount)
+            rate = self.exchange.symbol_price_prec(pair=pair, price=self.exchange.get_rate_limit(
+                pair=pair, buy_or_sell=self.buy_or_sell, amount=amount))
             amount = self.exchange.symbol_amount_prec(pair=pair, amount=amount)
 
             try:
@@ -119,9 +119,9 @@ class ActionHandler(object):
 
             if min_amount and amount < min_amount:
                 logger.warning(
-                    f'{self.action_id}:{pair} - requested amount if lower then min value: '
+                    f'{self.action_id}:{pair} - requested amount is lower then min value: '
                     f'{amount} < {min_amount}')
-                return filled_total
+                break
 
             transaction = Transaction(
                 action_id=self.action_id,
@@ -138,17 +138,19 @@ class ActionHandler(object):
             filled_total += filled
 
             if status == 'closed':
-                logger.info(f'{self.action_id}:{pair} - filled fully {filled}/{filled}.')
+                logger.info(
+                    f'{self.action_id}:{pair} - filled fully {filled_total}/{filled_total}.')
                 return filled
             else:
                 if filled:
                     amount = amount - filled
                     logger.info(
-                        f'{self.action_id}:{pair} - filled partially {self.FILLED}/{self.amount} '
-                        f'remaining:{amount}.')
+                        f'{self.action_id}:{pair} - filled partially {filled_total}/{self.amount} '
+                        f'remaining:{amount}')
                 else:
-                    logger.info(f'{self.action_id}:{pair} - not filled.')
+                    logger.info(f'{self.action_id}:{pair} - not filled')
 
+        logger.warning(f'{self.action_id}:{pair} - filled retry exceeded')
         return filled_total
 
     def _summary(self) -> Dict:

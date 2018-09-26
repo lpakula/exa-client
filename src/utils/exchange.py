@@ -48,16 +48,6 @@ class ExchangeHelper(object):
     """
     ccxt abstraction for common exchange actions
     """
-
-    # ACTIONS = {
-    #     'order_limit_buy': 'order_limit_buy',
-    #     'order_limit_sell': 'order_limit_sell',
-    #     'sync_amount': 'sync_amount'
-    # }
-    # _EXCHANGE_URLS = {
-    #     ccxt.bittrex.__name__: '/Market/Index?MarketName={quote}-{base}',
-    #     ccxt.binance.__name__: '/tradeDetail.html?symbol={base}_{quote}'
-    # }
     FIAT_SYMBOLS = ['USDT', 'TUSD', 'USD']
 
     _cached_ticker: Dict[str, Any] = {}
