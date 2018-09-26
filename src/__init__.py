@@ -4,20 +4,26 @@ import os, sys; sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import logging
 from datetime import datetime
 from functools import wraps
+from logger import SQLAlchemyHandler
 
 from flask import Flask, render_template, flash, request, redirect, url_for, g
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from sqlalchemy import desc
 
-from models import Settings, Exchange, Transaction, SystemLog, Symbol
+from models import Settings, Exchange, Transaction, Pair, Log
 from utils.balances import get_balances
 from utils.server import ExAServerHelper
 from utils.exchange import ExchangeHelper
+from utils.action import ActionHandler
 from database import init_db, db_session
 from forms import SettingsForm, ConnectForm, ExchangeForm
 
+
 VERSION = '2.0.0'
+logger = logging.getLogger(__name__)
+logger.addHandler(SQLAlchemyHandler())
+logger.setLevel(logging.INFO)
 
 
 def create_app(test_config=None):
@@ -27,8 +33,12 @@ def create_app(test_config=None):
     log.setLevel(logging.WARNING)
     fmt = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
     h = logging.StreamHandler()
+    # sh = SQLAlchemyHandler()
     h.setFormatter(fmt)
+    # sh.setFormatter(fmt)
     log.addHandler(h)
+    # log.addHandler(sh)
+
 
     if getattr(sys, 'frozen', False):
         template_folder = os.path.join(sys._MEIPASS, 'templates')
@@ -55,7 +65,7 @@ def create_app(test_config=None):
         @wraps(f)
         def decorated_function(*args, **kwargs):
             settings = Settings.query.get(1)
-            if not settings.connected:
+            if not settings.connected and False:
                 return redirect(url_for('connect'))
             return f(*args, **kwargs)
         return decorated_function
@@ -87,7 +97,8 @@ def create_app(test_config=None):
         exchanges = Exchange.query.all()
         setting = Settings.query.get(1)
         transactions = Transaction.query.all()
-        logs = SystemLog.query.all()
+        # logs = SystemLog.query.all()
+        logs = []
 
         balances = get_balances()
         for key in list(balances.keys()):
@@ -111,7 +122,7 @@ def create_app(test_config=None):
             exchange.enabled = form.enabled.data
             exchange.api_key = form.api_key.data
             exchange.api_secret = form.api_secret.data
-            exchange.valid = ExchangeHelper(exchange=exchange.name, version=VERSION).check_status()
+            exchange.valid = ExchangeHelper(exchange=exchange).status
             db_session.commit()
 
             if exchange.valid:
@@ -127,7 +138,7 @@ def create_app(test_config=None):
     @connect_required
     def security():
         setting = Settings.query.get(1)
-        pair_choices = [(i.name, i.name) for i in Symbol.query.all()]
+        pair_choices = [(i.name, i.name) for i in Pair.query.all()]
 
         form = SettingsForm(obj=setting)
         form.allowed_pairs.choices = pair_choices
@@ -154,28 +165,28 @@ def create_app(test_config=None):
 
     @app.route("/logs")
     def logs():
-        log_entries = SystemLog.query.order_by(desc(SystemLog.created)).all()
-        settings = Settings.query.get(1)
-        return render_template('logs.html', logs=log_entries, is_connected=settings.connected)
+        log_entries = Log.query.order_by(desc(Log.id)).all()
+        # settings = Settings.query.get(1)
+        return render_template('logs.html', logs=log_entries, is_connected=True)
 
-    @app.route("/logs/send")
-    @connect_required
-    def logs_send():
-        log_entries = SystemLog.query.order_by(desc(SystemLog.created)).all()
-        if log_entries:
-            status = ExAServerHelper(version=VERSION).send_logs()
-            if status:
-                flash('Logs have been sent successfully.', 'success')
-            else:
-                flash('Logs have not been sent. If problem persists please contact administrator.',
-                      'danger')
-        else:
-            flash('No logs to send.', 'warning')
-        return redirect(url_for('logs'))
+    # @app.route("/logs/send")
+    # @connect_required
+    # def logs_send():
+    #     log_entries = SystemLog.query.order_by(desc(SystemLog.created)).all()
+    #     if log_entries:
+    #         status = ExAServerHelper(version=VERSION).send_logs()
+    #         if status:
+    #             flash('Logs have been sent successfully.', 'success')
+    #         else:
+    #             flash('Logs have not been sent. If problem persists please contact administrator.',
+    #                   'danger')
+    #     else:
+    #         flash('No logs to send.', 'warning')
+    #     return redirect(url_for('logs'))
 
     @app.route("/logs/delete")
     def logs_delete():
-        SystemLog.query.delete()
+        Log.query.delete()
         db_session.commit()
         flash('Logs have been deleted.', 'success')
         return redirect(url_for('logs'))
@@ -241,11 +252,41 @@ def create_app(test_config=None):
             if not exc_tb:
                 break
 
-        log_entry = SystemLog(
-            message='{message} | type: {type} | stack: {stack} | exchange: {exchange}'
-            .format(message=e, type=exc_type, stack=stack, exchange=exchange_name))
-        db_session.add(log_entry)
-        db_session.commit()
+        logger.error('{message} | type: {type} | stack: {stack} | exchange: {exchange}'
+                     .format(message=e, type=exc_type, stack=stack, exchange=exchange_name))
+        # db_session.add(log_entry)
+        # db_session.commit()
+
+    @app.route("/test/")
+    def test_run_actions1():
+        # exchange =
+
+        # logger.warning('this is error')
+
+        exchange = ExchangeHelper(Exchange.query.get(1))
+
+        # from models import Log
+        #
+        # assert False, Log.query.all()
+
+
+        # assert False, exchange.client.fetch_balance()
+
+        # assert False, exchange.client.markets['TRX/BTC']
+        # output = exchange.get_rate_limit(pair='BTC/USDT', buy_or_sell='buy', amount=0.1)
+        # output = exchange.get_last_price('TRX/BTC')
+
+        # assert False, output
+        # run_actions()
+
+        # assert False, exchange.client.markets['TRX/BTC']['base']
+        #
+        # return ''
+
+        exchange = ExchangeHelper(exchange=Exchange.query.get(1))
+        ActionHandler(action_id=1, buy_or_sell='buy', pair='TRX/BTC', amount=500,
+                      exchange=exchange, deposit_asset='USDT').perform()
+        return ''
 
     if app.config['TESTING']:
         @app.route("/test/run_actions")
@@ -257,9 +298,9 @@ def create_app(test_config=None):
         def shutdown_session(exception=None):
             db_session.remove()
 
-        trigger = IntervalTrigger(seconds=10)
-        scheduler.add_job(run_actions, trigger=trigger, id='run_actions')
-        scheduler.start()
+        # trigger = IntervalTrigger(seconds=10)
+        # scheduler.add_job(run_actions, trigger=trigger, id='run_actions')
+        # scheduler.start()
 
     return app
 

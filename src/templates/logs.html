@@ -22,7 +22,7 @@
                     <br>If anything is not working as expected please send the logs to the ExA server for our team to examine. It will help ExA to fix all the issues faster and improve platfom stability.
                 </p>
                 <p>
-                    <a href="{{ url_for('logs_send') }}" class="btn btn-xs btn-success">Send logs</a>
+{#                    <a href="{{ url_for('logs_send') }}" class="btn btn-xs btn-success">Send logs</a>#}
                 </p>
                 {% endif %}
 
@@ -36,8 +36,9 @@
                     <tbody>
                         {% for log in logs %}
                             <tr>
-                                <td>{{ log.created }}</td>
-                                <td>{{ log.message }}</td>
+                                <td>{{ log.created_at }}</td>
+                                <td>{{ log.level }}</td>
+                                <td>{{ log.msg }}</td>
                             </tr>
                         {% endfor %}
                     </tbody>

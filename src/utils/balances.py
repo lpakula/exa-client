@@ -1,13 +1,11 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+"""
+Tracker for balance used by client
+"""
 from models import Transaction, Settings
 
 
 def get_balances():
-    """
-    Get used balance
-
-    """
+    """Get used balance"""
     settings = Settings.query.get(1)
     if not settings.allowed_balance:
         return {}

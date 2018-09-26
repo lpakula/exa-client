@@ -34,6 +34,6 @@ def checksum(version):
     """
 
     for client in ['linux', 'windows', 'macos']:
-        output = local('sha1sum ../app/exa-client_{client}_{version}.zip'.format(
+        output = local('sha1sum app/exa-client_{client}_{version}.zip'.format(
             client=client, version=version), capture=True)
         print(green(output))

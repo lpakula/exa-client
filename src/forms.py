@@ -5,8 +5,8 @@ from wtforms import Form, BooleanField, FloatField, StringField, SelectMultipleF
 
 
 ACTION_CHOICES = (
-    ('order_market_buy', 'order_market_buy'),
-    ('order_market_sell', 'order_market_sell')
+    ('order_limit_buy', 'order_limit_buy'),
+    ('order_limit_sell', 'order_limit_sell')
 )
 
 

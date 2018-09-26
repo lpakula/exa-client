@@ -52,10 +52,24 @@
                         {% for transaction in transactions %}
                             <tr>
                                 <td>{{ transaction.created }}</td>
-                                <td>{{ transaction.action_name }}</td>
+                                <td>{{ transaction.action_id }}</td>
+                                <td>{{ transaction.exchange }}</td>
+                                <td>{{ transaction.buy_or_sell }}</td>
                                 <td>{{ transaction.pair }}</td>
+                                <td>{{ transaction.rate }}</td>
                                 <td>{{ transaction.amount }}</td>
-                                <td>{{ transaction.balance_usdt }}</td>
+                                <td>{{ transaction.order_id }}</td>
+                                <td>{{ transaction.filled }}</td>
+{#                                id = Column(Integer, primary_key=True)#}
+{#                                action_id = Column(Integer, nullable=False)#}
+{#                                buy_or_sell = Column(String, nullable=False)#}
+{#                                exchange = Column(String, nullable=False)#}
+{#                                pair = Column(String, nullable=False)#}
+{#                                rate = Column(Float(precision=8), nullable=False)#}
+{#                                amount = Column(Float(precision=8), nullable=False)#}
+{#                                order_id = Column(Integer)#}
+{#                                filled = Column(Float(precision=8))#}
+{#                                created = Column(DateTime, default=arrow.utcnow().datetime)#}
                             </tr>
                         {% endfor %}
                     </tbody>
