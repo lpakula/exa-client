@@ -33,17 +33,13 @@ def create_app(test_config=None):
     log.setLevel(logging.WARNING)
     fmt = logging.Formatter('%(levelname)s:%(name)s:%(message)s')
     h = logging.StreamHandler()
-    # sh = SQLAlchemyHandler()
     h.setFormatter(fmt)
-    # sh.setFormatter(fmt)
     log.addHandler(h)
-    # log.addHandler(sh)
-
 
     if getattr(sys, 'frozen', False):
         template_folder = os.path.join(sys._MEIPASS, 'templates')
         static_folder = os.path.join(sys._MEIPASS, 'static')
-        app = Flask( __name__, template_folder=template_folder, static_folder=static_folder)
+        app = Flask(__name__, template_folder=template_folder, static_folder=static_folder)
     else:
         app = Flask(__name__)
 
@@ -285,7 +281,7 @@ def create_app(test_config=None):
 
         exchange = ExchangeHelper(exchange=Exchange.query.get(1))
         ActionHandler(action_id=1, buy_or_sell='buy', pair='TRX/BTC', amount=500,
-                      exchange=exchange, deposit_asset='USDT').perform()
+                      exchange=exchange).perform()
         return ''
 
     if app.config['TESTING']:

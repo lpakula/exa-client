@@ -1,4 +1,5 @@
 from unittest.mock import MagicMock, call
+from database import db_session
 
 from src import Transaction
 from utils.action import ActionHandler
@@ -150,4 +151,50 @@ def test_transaction_not_filled(mocker, exchange):
 
     transaction = Transaction.query.all()
     assert len(transaction) == 3
+
+
+def test_action_summary(exchange):
+    transaction = Transaction(
+        action_id=1,
+        buy_or_sell='buy',
+        pair='TRX/BTC',
+        amount=20.00000000,
+        rate=0.50000000,
+        filled=20.00000000,
+        exchange='binance')
+    db_session.add(transaction)
+    db_session.commit()
+
+    summary = ActionHandler(
+        action_id=1, buy_or_sell='buy', pair='TRX/BTC', amount=90.99181073,
+        exchange=exchange, deposit_asset='USDT')._summary()
+
+    assert summary['exchange'] == 'binance'
+    assert summary['pair'] == 'TRX/BTC'
+    assert summary['buy_or_sell'] == 'buy'
+    assert summary['amount'] == 90.99181073
+    assert summary['filled'] == 20.00000000
+    assert summary['balance'] == 90.99181073
+    assert summary['avg_price'] == 0.5
+    assert summary['transactions'] == 1
+    assert summary['deposit'] == 'USDT'
+
+    transaction = Transaction(
+        action_id=1,
+        buy_or_sell='buy',
+        pair='TRX/BTC',
+        amount=20.00000000,
+        rate=1.00000000,
+        filled=20.00000000,
+        exchange='binance')
+    db_session.add(transaction)
+    db_session.commit()
+
+    summary = ActionHandler(
+        action_id=1, buy_or_sell='buy', pair='TRX/BTC', amount=90.99181073,
+        exchange=exchange)._summary()
+
+    assert summary['filled'] == 40.00000000
+    assert summary['avg_price'] == 0.75
+    assert summary['transactions'] == 2
 

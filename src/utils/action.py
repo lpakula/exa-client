@@ -5,7 +5,7 @@ Action is a conteiner for transactions that need to be executed for that action 
 """
 import logging
 
-from typing import List, Dict, Any, Optional
+from typing import Dict
 from database import db_session
 from exceptions import DependencyException
 from models import Transaction
@@ -50,7 +50,7 @@ class ActionHandler(object):
     def _perform_buy(self) -> None:
         """Perform buy action"""
         if self.use_deposit:
-            logger.info(f'{self.action_id}:{self.pair} - Buy Deposit - {self.deposit_asset}')
+            logger.info(f'{self.action_id}:{self.pair} - deposit from {self.deposit_asset}')
             if self.exchange.client.markets[self.pair]['quote'] in self.exchange.FIAT_SYMBOLS:
                 raise DependencyException(
                     f'Can not use {self.deposit_asset} deposit for {self.pair} pair')
@@ -73,7 +73,7 @@ class ActionHandler(object):
     def _perform_sell(self) -> None:
         """Perform sell action"""
         sell_filled = self._transaction(pair=self.pair, amount=self.amount)
-        if self.use_deposit:
+        if sell_filled and self.use_deposit:
             if self.exchange.client.markets[self.pair]['quote'] in self.exchange.FIAT_SYMBOLS:
                 raise DependencyException(
                     f'Can not use {self.deposit_asset} deposit for {self.pair} pair')
@@ -81,6 +81,8 @@ class ActionHandler(object):
             symbol = f'{quote}/{asset}'
             last_price = self.exchange.get_last_price(self.pair)
             deposit_amount = self.exchange.symbol_amount_prec(symbol, sell_filled * last_price)
+            logger.info(
+                f'{self.action_id}:{self.pair} - deposit to {self.deposit_asset}')
             self._transaction(pair=symbol, amount=deposit_amount)
 
     def _transaction(self, pair: str, amount: float) -> float:
@@ -121,7 +123,7 @@ class ActionHandler(object):
                 logger.warning(
                     f'{self.action_id}:{pair} - requested amount is lower then min value: '
                     f'{amount} < {min_amount}')
-                break
+                return filled_total
 
             transaction = Transaction(
                 action_id=self.action_id,
@@ -157,7 +159,7 @@ class ActionHandler(object):
         transactions = Transaction.query.filter_by(action_id=self.action_id, pair=self.pair)
         filled = sum([t.filled for t in transactions])
         try:
-            price = sum([t.rate for t in transactions])/filled
+            price = sum([t.rate * t.filled for t in transactions]) / filled
         except ZeroDivisionError:
             price = 0
 
