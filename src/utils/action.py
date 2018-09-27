@@ -1,12 +1,12 @@
 """
 Action handler
 
-Action is a conteiner for transactions that need to be executed for that action to complete
+Container for transactions that need to be executed for action to complete
 """
 import logging
 
 from typing import Dict
-from database import db_session
+from db import db_session
 from exceptions import DependencyException
 from models import Transaction
 from logger import SQLAlchemyHandler

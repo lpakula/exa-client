@@ -1,18 +1,21 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+"""
+Exchange exceptions
 
+Based on freqtrade project
+https://github.com/freqtrade/freqtrade
+"""
+# class ExAServerException(Exception):
+#     """
+#     ExA server exception
+#     This could happen when connection to ExA server is interrupted
+#     """
+#
+#
+# class ExAClientException(Exception):
+#     """
+#     ExA client exception
+#     """
 
-class ExAServerException(Exception):
-    """
-    ExA server exception
-    This could happen when connection to ExA server is interrupted
-    """
-
-
-class ExAClientException(Exception):
-    """
-    ExA client exception
-    """
 
 
 class DependencyException(BaseException):

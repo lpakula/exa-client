@@ -42,7 +42,7 @@ class ExAServerHelper(object):
         """Get actions to execute for given exchanges"""
         try:
             response = requests.get(
-                '{}/api/actions/?exchange={}'.format( self.SERVER_URL, '&exchanges='.join(exchanges)), 
+                '{}/api/actions/?exchange={}'.format(self.SERVER_URL, '&exchanges='.join(exchanges)),
                 timeout=7, headers={'Authorization': f'Token {self.token}'})
         except requests.exceptions.Timeout as e:
             logger.warning(f'Server Timeout. Message: {e}')

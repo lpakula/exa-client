@@ -24,7 +24,7 @@ def balance_exceeded(pair: str, balance_requested: D) -> bool:
     """
     Check if used balance is below balance limit
     """
-    transactions = Transaction.query.filter_by(action_name='order_limit_buy', pair=pair)
+    transactions = Transaction.query.filter_by(buy_or_sell='buy', pair=pair)
     balance_allowed = D(get_settings().allowed_balance)
     balance_used = sum([t.balance_usdt for t in transactions])
     return not balance_allowed > D(balance_used) + D(balance_requested)

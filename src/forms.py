@@ -19,9 +19,7 @@ class SettingsForm(Form):
     """
     Settings Form
     """
-    test_mode = BooleanField('Test Mode')
     allowed_pairs = SelectMultipleField(choices=[])
-    allowed_actions = SelectMultipleField(choices=ACTION_CHOICES, default=ACTION_CHOICES)
     allowed_balance = FloatField('Allowed Buy Balance', default=0, validators=(validators.Optional(),))
 
 

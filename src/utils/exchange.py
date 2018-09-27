@@ -20,7 +20,7 @@ from utils.helpers import get_settings
 from utils.server import ExAServerHelper
 from exceptions import DependencyException, OperationalException, TemporaryError
 from models import Exchange, Transaction
-from database import db_session
+from db import db_session
 
 
 logger = logging.getLogger(__name__)

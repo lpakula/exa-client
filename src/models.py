@@ -7,17 +7,21 @@ from sqlalchemy_utils import ScalarListType
 from database import Base
 
 
-class Settings(Base):
-    """Model to store user config"""
-    __tablename__ = 'settings'
-
+class Server(Base):
+    """Model to store server state"""
+    __tablename__ = 'server'
     id = Column(Integer, primary_key=True)
     connected = Column(Boolean())
-    exa_token = Column(String(100))
+    token = Column(String(100))
+
+
+class Config(Base):
+    """Config"""
+    __tablename__ = 'config'
+
     allowed_pairs = Column(ScalarListType())
-    allowed_actions = Column(ScalarListType())
     allowed_balance = Column(Float(precision=4))
-    test_mode = Column(Boolean())
+    logging = Column(Boolean())
 
 
 class Exchange(Base):
@@ -47,34 +51,9 @@ class Exchange(Base):
         self.uid = uid
 
 
-class Pair(Base):
-    """Model to store available trading pairs"""
-    __tablename__ = 'pair'
-
-    id = Column(Integer, primary_key=True)
-    name = Column(String, nullable=False)
-    
-
-# class Action(Base):
-#     """
-#     Action to perorm.
-#
-#     Some actions group transactions that complete it
-#     eg. order_limit_buy action that use USD deposit will perform at least two buy transactions
-#     to complete
-#     """
-#     id = Column(Integer, primary_key=True)
-#     action_id = Column(Integer, nullable=False)
-#     action_type = Column(String, nullable=False)
-#     pair = Column('pair_id', Integer, ForeignKey("pair.id"), nullable=False),
-#     amount = Column(Float(precision=8))
-#     deposit = Column(String)
-#     deposit_amount = Column(Float(precision=8))
-
-
 class Transaction(Base):
     """Transaction to perform"""
-    __tablename__ = 'transactions'
+    __tablename__ = 'transaction'
 
     id = Column(Integer, primary_key=True)
     action_id = Column(Integer, nullable=False)
@@ -87,32 +66,6 @@ class Transaction(Base):
     filled = Column(Float(precision=8), default=0)
     status = Column(String)
     created = Column(DateTime, default=arrow.utcnow().datetime)
-
-
-
-    # def perform(self):
-
-    # def __init__(self, action_id, buy_or_sell, exchange, pair, rate, amount,
-    #              order_id=None, filled=0):
-    #
-    #     self.action_id = action_id
-    #     self.buy_or_sell = buy_or_sell
-    #     self.exchange = exchange
-    #     self.pair = pair
-    #     self.rate = rate
-    #     self.amount = amount
-    #     self.order_id = order_id
-    #     self.filled = filled
-
-    def check_status(self):
-        """Check order status"""
-        pass
-
-    def create_order(self):
-        pass
-
-    def cancel_order(self):
-        pass
 
 
 class Log(Base):

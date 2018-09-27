@@ -8,9 +8,9 @@ from typing import Dict, Tuple
 
 from exceptions import DependencyException, TemporaryError, OperationalException
 from models import Transaction, Exchange
-from database import db_session
+from db import db_session
 from logger import SQLAlchemyHandler
-from utils.exchange import ExchangeHelper
+from .exchange import ExchangeHelper
 
 
 logger = logging.getLogger(__name__)
