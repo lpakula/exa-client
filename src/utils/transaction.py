@@ -3,13 +3,13 @@ Helper class to perform buy and sell actions
 """
 import time
 import logging
+from typing import Tuple
 
-from typing import Dict, Tuple
-
-from exceptions import DependencyException, TemporaryError, OperationalException
-from models import Transaction, Exchange
 from db import db_session
+from exceptions import DependencyException, TemporaryError, OperationalException
+from models import Transaction
 from logger import SQLAlchemyHandler
+
 from .exchange import ExchangeHelper
 
 

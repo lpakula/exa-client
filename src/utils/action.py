@@ -4,14 +4,15 @@ Action handler
 Container for transactions that need to be executed for action to complete
 """
 import logging
-
 from typing import Dict
+
 from db import db_session
 from exceptions import DependencyException
 from models import Transaction
 from logger import SQLAlchemyHandler
-from utils.exchange import ExchangeHelper
-from utils.transaction import TransactionHandler
+
+from .exchange import ExchangeHelper
+from .transaction import TransactionHandler
 
 
 logger = logging.getLogger(__name__)

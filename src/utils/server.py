@@ -4,12 +4,14 @@ import logging
 import requests
 from typing import List
 
+from db import db_session
 from exceptions import ExAServerException
-from models import Pair
-from database import db_session
-from utils.helpers import get_settings
+from models import ExAServer
+from logger import SQLAlchemyHandler
 
 logger = logging.getLogger(__name__)
+logger.addHandler(SQLAlchemyHandler())
+logger.setLevel(logging.INFO)
 
 
 class ExAServerHelper(object):
@@ -18,10 +20,10 @@ class ExAServerHelper(object):
     SERVER_URL = os.environ.get('SERVER_URL', 'https://exchangeautomation.com')
 
     def __init__(self) -> None:
-        from __init__ import VERSION
-        self.version = VERSION
-        self.settings = get_settings()
-        self.token = self.settings.exa_token.strip()
+        from __init__ import __version__
+        self.version = __version__
+        self.server = ExAServer.query.one()
+        self.token = self.server.token
 
     def connect(self, username: str, password: str) -> bool:
         """Connect to  ExA server"""
@@ -29,8 +31,8 @@ class ExAServerHelper(object):
             f'{self.SERVER_URL}/api/connect/', timeout=7, auth=(username, password))
 
         if response.status_code == 200:
-            self.settings.connected = True
-            self.settings.exa_token = response.json()['api_token']
+            self.server.connected = True
+            self.server.token = response.json()['api_token']
             db_session.commit()
             logger.info('ExA server connected successfully.')
             return True
@@ -45,7 +47,7 @@ class ExAServerHelper(object):
                 '{}/api/actions/?exchange={}'.format(self.SERVER_URL, '&exchanges='.join(exchanges)),
                 timeout=7, headers={'Authorization': f'Token {self.token}'})
         except requests.exceptions.Timeout as e:
-            logger.warning(f'Server Timeout. Message: {e}')
+            logger.warning(f'Server Timeout. Please check your internet connection. Message: {e}')
             return []
         except requests.exceptions.ConnectionError as e:
             logger.error(f'Server Connection Error. Message: {e}')
@@ -74,7 +76,7 @@ class ExAServerHelper(object):
         }
 
         response = requests.put(
-            f'{self.SERVER_URL}/api/actions/', timeout=7, data=payload, 
+            f'{self.SERVER_URL}/api/actions/', timeout=7, data=payload,
             headers={'Authorization': f'Token {self.token}'})
         if response.status_code == 200:
             logger.info(f'Action {action_id} confirmed with ExA server.')
@@ -85,27 +87,27 @@ class ExAServerHelper(object):
                 f'administrator. Message: {response.content}')
             return False
 
-    def sync_amount(self, action_id: int, balance) -> bool:
-        """Confirm exact purchased ammount"""
-        payload = {
-            'action_id': action_id,
-            'status': True,
-            'response': f'balance: {balance}',
-            'balance': balance,
-            'version': self.version
-        }
-
-        response = requests.put(
-            f'{self.SERVER_URL}/api/actions/', timeout=7, data=payload, 
-            headers={'Authorization': f'Token {self.token}'})
-        if response.status_code == 200:
-            logger.info(f'Amount synced with ExA server {balance}')
-            return True
-        else:
-            logger.error(
-                f'Error while connecting to ExA server. If problem persist please contact '
-                f'administrator. Message: {response.content}')
-            return False
+    # def sync_amount(self, action_id: int, balance) -> bool:
+    #     """Confirm exact purchased ammount"""
+    #     payload = {
+    #         'action_id': action_id,
+    #         'status': True,
+    #         'response': f'balance: {balance}',
+    #         'balance': balance,
+    #         'version': self.version
+    #     }
+    # 
+    #     response = requests.put(
+    #         f'{self.SERVER_URL}/api/actions/', timeout=7, data=payload,
+    #         headers={'Authorization': f'Token {self.token}'})
+    #     if response.status_code == 200:
+    #         logger.info(f'Amount synced with ExA server {balance}')
+    #         return True
+    #     else:
+    #         logger.error(
+    #             f'Error while connecting to ExA server. If problem persist please contact '
+    #             f'administrator. Message: {response.content}')
+    #         return False
 
     # def send_logs(self) -> bool:
     #     """Send system logs"""
@@ -125,19 +127,19 @@ class ExAServerHelper(object):
     #     else:
     #         logger.error(f'Sending logs failed. Message: {response.content}')
     #         return False
-
-    def sync_symbols(self) -> None:
-        """Fetch supported symbols"""
-        response = requests.get(
-            f'{self.SERVER_URL}/api/symbols/', timeout=7, 
-            headers={'Authorization': f'Token {self.token}'})
-
-        if response.status_code == 200:
-            logger.info('Symbols synced successfully')
-            for item in response.json():
-                symbol = Pair.query.filter_by(name=item).first()
-                if not symbol:
-                    db_session.add(Pair(name=item))
-            db_session.commit()
-        else:
-            logger.error(f'Sync symbols failed. Message: {response.content}')
+    #
+    # def sync_symbols(self) -> None:
+    #     """Fetch supported symbols"""
+    #     response = requests.get(
+    #         f'{self.SERVER_URL}/api/symbols/', timeout=7,
+    #         headers={'Authorization': f'Token {self.token}'})
+    #
+    #     if response.status_code == 200:
+    #         logger.info('Symbols synced successfully')
+    #         for item in response.json():
+    #             symbol = Pair.query.filter_by(name=item).first()
+    #             if not symbol:
+    #                 db_session.add(Pair(name=item))
+    #         db_session.commit()
+    #     else:
+    #         logger.error(f'Sync symbols failed. Message: {response.content}')

@@ -6,7 +6,8 @@ import pytest
 from unittest.mock import patch
 
 from models import Exchange
-from ..utils.exchange import ExchangeHelper
+from utils.exchange import ExchangeHelper
+from db import Base, engine
 from .. import create_app
 
 
@@ -22,6 +23,7 @@ def app():
         'TESTING': True,
     })
     yield app
+    Base.metadata.drop_all(bind=engine)
 
 
 @pytest.fixture
@@ -57,24 +59,15 @@ def balances():
     }
 
 
-# def last_price(pair, fiat=''):
-#     if fiat:
-#         values = {'TRX/BTC': 0.02, 'BTC/USDT': 6350.03}
-#     else:
-#         values = {'TRX/BTC': 0.00000100, 'BTC/USDT': 6350.03}
-#     return values[pair]
-
-
 @pytest.fixture
-def exchange(app):
-    with patch('src.utils.exchange.ccxt'):
-        exchange = ExchangeHelper(exchange=Exchange.query.get(1))
-        exchange.client.name = 'binance'
-        exchange.client.markets = markets()
-        exchange.client.fetch_ticker.side_effect = tickers
-        exchange.client.fetch_balance.return_value = balances()
-
-        return exchange
+def exchange(mocker, app):
+    mocker.patch('utils.exchange.ccxt')
+    exchange = ExchangeHelper(exchange=Exchange.query.get(1))
+    exchange.client.name = 'binance'
+    exchange.client.markets = markets()
+    exchange.client.fetch_ticker.side_effect = tickers
+    exchange.client.fetch_balance.return_value = balances()
+    return exchange
 
 
 @pytest.fixture(scope='function')

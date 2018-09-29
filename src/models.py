@@ -1,15 +1,14 @@
 """Database Models"""
 import arrow
-
 from sqlalchemy import Column, Integer, String, Boolean, Float, DateTime, ForeignKey
 from sqlalchemy_utils import ScalarListType
 
-from database import Base
+from db import Base
 
 
-class Server(Base):
+class ExAServer(Base):
     """Model to store server state"""
-    __tablename__ = 'server'
+    __tablename__ = 'exaserver'
     id = Column(Integer, primary_key=True)
     connected = Column(Boolean())
     token = Column(String(100))
@@ -18,7 +17,7 @@ class Server(Base):
 class Config(Base):
     """Config"""
     __tablename__ = 'config'
-
+    id = Column(Integer, primary_key=True)
     allowed_pairs = Column(ScalarListType())
     allowed_balance = Column(Float(precision=4))
     logging = Column(Boolean())
@@ -76,13 +75,15 @@ class Log(Base):
     level = Column(String)
     trace = Column(String)
     msg = Column(String)
+    version = Column(String)
     created_at = Column(DateTime, default=arrow.utcnow().datetime)
 
-    def __init__(self, logger=None, level=None, trace=None, msg=None):
+    def __init__(self, logger=None, level=None, trace=None, msg=None, version=None):
         self.logger = logger
         self.level = level
         self.trace = trace
         self.msg = msg
+        self.version = version
 
     def __unicode__(self):
         return self.__repr__()

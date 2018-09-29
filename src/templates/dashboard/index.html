@@ -6,30 +6,26 @@
             <div class="ibox-title">
                 <h5>Dashboard</h5>
                 <div class="text-right">
-                    <a href="{{ url_for('logs') }}" class="btn btn-xs btn-default">Logs ({{ logs|count }})</a>
-                    <a href="{{ url_for('transactions') }}" class="btn btn-xs btn-default">Transactions ({{ transactions|count }})</a>
-                    <a href="{{ url_for('security') }}" class="btn btn-xs btn-success">Security</a>
+                    <a href="{{ url_for('logs.index') }}" class="btn btn-xs btn-default">Logs ({{ logs }})</a>
+                    <a href="{{ url_for('transactions.index') }}" class="btn btn-xs btn-default">Transactions ({{ transactions }})</a>
+                    <a href="{{ url_for('config.index') }}" class="btn btn-xs btn-success">Config</a>
                 </div>
             </div>
             <div class="ibox-content">
                 <p>
-                    Connected: <span class="label {% if setting.connected %}label-primary{% else %}label-danger{% endif %}">{{ setting.connected or "False" }}</span>
+                    Connected: <span class="label {% if server.connected %}label-primary{% else %}label-danger{% endif %}">{{ server.connected or "False" }}</span>
                     <br><small>Connected to ExA server</small>
                 </p>
-                {% if setting.allowed_pairs or setting.allowed_action or setting.allowed_balance %}
+                {% if config.allowed_pairs or config.allowed_balance %}
                 <p class="hr-line-dashed"></p>
                 {% endif %}
                 <p>
-                    {% if setting.allowed_pairs %}
-                        Allowed Pairs: {{ ", ".join(setting.allowed_pairs) }}
+                    {% if config.allowed_pairs %}
+                        Allowed Pairs: {{ ", ".join(config.allowed_pairs) }}
                     {% endif %}
-                    {% if setting.allowed_actions %}
+                    {% if config.allowed_balance %}
                         <br><br>
-                        Allowed Actions: {{ ", ".join(setting.allowed_actions)|upper }}
-                    {% endif %}
-                    {% if setting.allowed_balance %}
-                        <br><br>
-                        Allowed Balance: <b>{{ setting.allowed_balance }}</b> USDT
+                        Allowed Balance: <b>{{ config.allowed_balance }}</b> USDT
                         {% if balances %}
                             <ul>
                             {% for key, value in balances.items() %}
@@ -93,7 +89,7 @@
                                         {{ exchange.refreshed }}
                                     <td>
                                     <td class="text-right">
-                                        <a href="{{ url_for('exchange_edit', exchange_id=exchange.id ) }}" class="btn btn-xs btn-success">
+                                        <a href="{{ url_for('exchange.edit', exchange_id=exchange.id ) }}" class="btn btn-xs btn-success">
                                             {% if not exchange.api_secret %} Add API Keys {% else %} Edit {% endif %}
                                         </a>
                                     </td>

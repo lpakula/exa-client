@@ -1,6 +1,6 @@
 from functools import wraps
 from flask import redirect, url_for, g
-from utils.helpers import get_settings
+from utils.database import get_server
 
 
 def login_required(view):
@@ -15,9 +15,8 @@ def login_required(view):
 def connect_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
-        settings = get_settings()
-        if not settings.connected and False:
-            return redirect(url_for('connect'))
+        if not get_server().connected:
+            return redirect(url_for('auth.connect'))
         return f(*args, **kwargs)
     return decorated_function
 

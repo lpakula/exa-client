@@ -8,8 +8,8 @@
             <div class="ibox-title">
                 <h5>Transactions</h5>
                 <div class="text-right">
-                    <a href="{{ url_for('dashboard') }}" class="btn btn-xs btn-default">Back</a>
-                    <a href="{{ url_for('transactions_delete') }}" class="btn btn-xs btn-danger">Release balance</a>
+                    <a href="{{ url_for('dashboard.index') }}" class="btn btn-xs btn-default">Back</a>
+                    <a href="{{ url_for('transactions.delete') }}" class="btn btn-xs btn-danger">Release balance</a>
                 </div>
             </div>
             <div class="ibox-content">
@@ -17,10 +17,10 @@
                     In this section you can see all transactions performed by ExA client.
                     <br>If transactions reach <b>Allowed balance</b> limit, use <i>Release balance</i> button to reset.
                 </p>
-                {% if setting.allowed_balance %}
+                {% if config.allowed_balance %}
                     <div class="hr-line-dashed"></div>
                     <p>
-                    <p> Balance limit: <b>{{ setting.allowed_balance }}</b> USDT </p>
+                    <p> Balance limit: <b>{{ config.allowed_balance }}</b> USDT </p>
                         <p>
                             Balance usage:
                             <br><small>Balance usage is cumulative and calculated for <code>order_market_buy</code> actions only</small>

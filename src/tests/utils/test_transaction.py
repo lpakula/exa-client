@@ -1,8 +1,7 @@
+import pytest
 from unittest.mock import MagicMock
 
-import pytest
-
-from database import db_session
+from db import db_session
 from models import Transaction
 from utils.transaction import TransactionHandler
 

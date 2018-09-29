@@ -1,10 +1,13 @@
-#!/usr/bin/python
-# -*- coding: utf-8 -*-
+"""
+Configure database
+"""
 import os
 import sys
+
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
+from sqlalchemy.orm.exc import NoResultFound
 
 if getattr(sys, 'frozen', False):
     application_path = os.path.dirname(sys.executable)
@@ -21,25 +24,29 @@ Base.query = db_session.query_property()
 
 
 def init_db():
+    """Init database and create initial objecs"""
     import models
 
     Base.metadata.create_all(bind=engine)
 
-    setting = models.Settings.query.get(1)
-    if not setting:
-        settings = models.Settings()
-        db_session.add(settings)
+    try:
+        models.Config.query.one()
+    except NoResultFound:
+        config = models.Config()
+        db_session.add(config)
         db_session.commit()
 
-    for exchange_name in ['binance']:
-        exchange = models.Exchange.query.filter_by(name=exchange_name).all()
-        if not exchange:
-            exchange = models.Exchange(name=exchange_name)
+    try:
+        models.ExAServer.query.one()
+    except NoResultFound:
+        server = models.ExAServer()
+        db_session.add(server)
+        db_session.commit()
+
+    for e in ['binance', 'bittrex']:
+        try:
+            models.Exchange.query.filter_by(name=e).one()
+        except NoResultFound:
+            exchange = models.Exchange(name=e)
             db_session.add(exchange)
             db_session.commit()
-
-
-
-
-
-

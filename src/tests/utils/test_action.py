@@ -1,20 +1,23 @@
 from unittest.mock import MagicMock, call
-from database import db_session
+from db import db_session
 
-from src import Transaction
+from models import Transaction
 from utils.action import ActionHandler
 
 
-def test_perform_buy(exchange):
+def test_perform_buy(mocker, exchange):
+    _transaction_mock = mocker.spy(ActionHandler, '_transaction')
     _transaction_mock = MagicMock()
     ActionHandler._transaction = _transaction_mock
+
     ActionHandler(
         action_id=1, buy_or_sell='buy', pair='TRX/BTC', amount=90.99181073,
         exchange=exchange).perform()
     _transaction_mock.assert_called_once_with(amount=90.99181073, pair='TRX/BTC')
 
 
-def test_perform_buy_with_deposit(exchange):
+def test_perform_buy_with_deposit(mocker, exchange):
+    _transaction_mock = mocker.spy(ActionHandler, '_transaction')
     _transaction_mock = MagicMock(side_effect=[0.000347, 90.99181073])
     ActionHandler._transaction = _transaction_mock
     ActionHandler(
@@ -26,16 +29,18 @@ def test_perform_buy_with_deposit(exchange):
     )
 
 
-def test_perform_sell(exchange):
+def test_perform_sell(mocker, exchange):
+    _transaction_mock = mocker.spy(ActionHandler, '_transaction')
     _transaction_mock = MagicMock(side_effect=[90.99181073])
     ActionHandler._transaction = _transaction_mock
     ActionHandler(
         action_id=1, buy_or_sell='sell', pair='TRX/BTC', amount=90.99181073,
         exchange=exchange).perform()
     _transaction_mock.assert_called_once_with(amount=90.99181073, pair='TRX/BTC')
-    
-    
-def test_perform_sell_with_deposit(exchange):
+
+
+def test_perform_sell_with_deposit(mocker, exchange):
+    _transaction_mock = mocker.spy(ActionHandler, '_transaction')
     _transaction_mock = MagicMock(side_effect=[90.99181073, 0.000347])
     ActionHandler._transaction = _transaction_mock
     ActionHandler(
