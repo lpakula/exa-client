@@ -33,10 +33,8 @@ def get_balances() -> Dict:
 
 
 def balance_exceeded(pair: str, balance_requested: float) -> bool:
-    """
-    Check if used balance is below balance limit
-    """
+    """Check if requested balance does not exeed limit"""
     transactions = Transaction.query.filter_by(buy_or_sell='buy', pair=pair)
     balance_allowed = get_config().allowed_balance
-    balance_used = sum([t.balance_usdt for t in transactions])
+    balance_used = sum([t.price_fiat * t.amount for t in transactions])
     return not balance_allowed > balance_used + balance_requested

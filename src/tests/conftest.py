@@ -1,15 +1,13 @@
-import logging
-import sys
 import arrow
+import logging
 import pytest
+import sys
 
-from unittest.mock import patch
-
+from db import Base, engine
 from models import Exchange
 from utils.exchange import ExchangeHelper
-from db import Base, engine
-from .. import create_app
 
+from .. import create_app
 
 logger = logging.getLogger()
 logger.level = logging.INFO

@@ -33,12 +33,13 @@ class TransactionHandler(object):
     def perform(self) -> Tuple[str, float]:
         """Perform Transaction on exchange"""
         try:
-            
             order_id = getattr(self.exchange, self.transaction.buy_or_sell)(
                 self.pair, self.rate_limit, self.amount)['id']
         except (DependencyException, TemporaryError, OperationalException) as e:
             logger.error(f'{self.action_id}:{self.pair} - Order Failed - message: {e}')
             return self.transaction.status, self.transaction.filled
+
+        self.transaction.price_fiat = self.exchange.get_last_price(self.pair, 'USDT')
 
         logger.info(
             f'{self.action_id}:{order_id}:{self.pair} - Order Created - '

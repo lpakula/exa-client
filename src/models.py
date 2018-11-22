@@ -64,6 +64,7 @@ class Transaction(Base):
     order_id = Column(Integer)
     filled = Column(Float(precision=8), default=0)
     status = Column(String)
+    price_fiat = Column(Float(precision=8), default=0, nullable=False)
     created = Column(DateTime, default=arrow.utcnow().datetime)
 
 
@@ -90,6 +91,3 @@ class Log(Base):
 
     def __repr__(self):
         return "<Log: %s - %s>" % (self.created_at.strftime('%m/%d/%Y-%H:%M:%S'), self.msg[:50])
-
-
-

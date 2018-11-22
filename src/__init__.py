@@ -1,17 +1,17 @@
 import os, sys; sys.path.append(os.path.dirname(os.path.realpath(__file__)))
 import logging
-from datetime import datetime
 
+import arrow
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.triggers.interval import IntervalTrigger
 from flask import Flask
 
 from db import init_db, db_session
 from models import Exchange
-from utils.action import ActionHandler
-from utils.exchange import ExchangeHelper
-from utils.database import get_config, get_server
 from logger import SQLAlchemyHandler, log_exception
+from utils.action import ActionHandler
+from utils.database import get_config, get_server
+from utils.exchange import ExchangeHelper
 from utils.server import ExAServerHelper
 
 
@@ -73,32 +73,27 @@ def create_app(test_config=None):
 
     def run_actions():
         valid_exchanges = Exchange.query.filter_by(valid=True, enabled=True).all()
-        if valid_exchanges:
-            for valie_exchange in valid_exchanges:
-                valie_exchange.refreshed = datetime.utcnow()
-            db_session.commit()
+        if not valid_exchanges:
+            return None
 
+        for ex in valid_exchanges:
+            ex.refreshed = arrow.utcnow().datetime
+        db_session.commit()
+
+        try:
+            actions = ExAServerHelper().get_actions(exchanges=[e.name for e in valid_exchanges])
+        except Exception as e:
+            log_exception(e)
+            return False
+
+        for action in actions:
             try:
-                actions = ExAServerHelper().get_actions(exchanges=[e.name for e in valid_exchanges])
+                ex = ExchangeHelper(Exchange.query.filter_by(name=action['exchange']).one())
+                ActionHandler(
+                    action_id=action['id'], buy_or_sell=action['buy_or_sell'], pair=action['pair'],
+                    amount=action['amount'], exchange=ex, deposit_asset=action.get('deposit', ''))
             except Exception as e:
-                log_exception(e)
-                return False
-
-            if not actions:
-                return False
-
-            for action in actions:
-                try:
-                    ex = ExchangeHelper(Exchange.query.filter_by(name=action['exchange']).one())
-                    ActionHandler(
-                        action_id=action['id'],
-                        buy_or_sell=action['buy_or_sell'],
-                        pair=action['pair'],
-                        amount=action['amount'],
-                        exchange=ex,
-                        deposit_asset=action.get('deposit', ''))
-                except Exception as e:
-                    log_exception(e, exchange=action['exchange'])
+                log_exception(e, exchange=action['exchange'])
 
     if app.config['TESTING']:
         @app.route("/test/run_actions")

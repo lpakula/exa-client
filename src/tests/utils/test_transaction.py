@@ -42,6 +42,13 @@ def test_buy_transaction_execute_buy_action(exchange, buy_transaction, limit_buy
     exchange.buy.assert_called_with('TRX/BTC', 0.00000100, 90.99181073)
 
 
+def test_transaction_snapshot_fiat_price(exchange, buy_transaction, limit_buy_order):
+    exchange.get_order = MagicMock(return_value=limit_buy_order)
+    assert buy_transaction.price_fiat == 0
+    TransactionHandler(transaction=buy_transaction, exchange=exchange).perform()
+    assert buy_transaction.price_fiat == 0.0258185014
+
+
 def test_sell_transaction_execute_sell_action(exchange, sell_transaction, limit_sell_order):
     sell_mock = MagicMock()
     exchange.sell = sell_mock
